@@ -1,11 +1,6 @@
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain_core.prompts import ChatPromptTemplate
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, Dict
 
-from typing import Optional
-import config as cfg
-
-llm = cfg.llm_chat
 
 CONVERSATION_FUNCTION = {
     "name": "chat_response",
@@ -25,32 +20,36 @@ CONVERSATION_FUNCTION = {
 }
 
 class CallingFormat(BaseModel):
+    model_config = ConfigDict(extra='ignore')
+    tool: str 
+    tool_input: Optional[Dict] 
 
-    tool: str = Field(description="name of the selected tool")
-    tool_input: Optional[str] = Field(description="parameters for the selected tool, matching the tool's JSON schema")
 
     def __init__(self, **data):
         super().__init__(**data)
         self.tool = data["tool"]
         self.tool_input = data["tool_input"]
-    
+
 
     @staticmethod
     def generate_response(llm, user_prompt: str, tools, functions):
-        parser = JsonOutputParser(pydantic_object=CallingFormat)
-     
-        prompt = ChatPromptTemplate.from_messages(
-
+    
+        response = llm.chat.completions.create(
+           model="meta-llama/Meta-Llama-3-70B-Instruct",
+           messages=
             [
-                ("system", "You are a helpful assistant with access to these {tool} to answer the {user_prompt} question:"),
-                ("system", "If you do not need to use a tool, you can response with {CONVERSATION_FUNCTION}"),
-                ("system", "You must reply in JSON format as so {{tool: tool_name, tool_input: tool_input}}"),
-
+                {"role": "system", "content": f"You are a helpful assistant with access to these {tools} to answer the {user_prompt} question:"},
+                {"role":"system", "content": f"If you do not need to use a tool, you can response with {CONVERSATION_FUNCTION}"},
+                {"role":"system", "content":"You must reply in valid JSON format, with no other text. Example: {{\"tool\": \"tool_name\", \"tool_input\": \"tool_input\"}}"},
             ]
-      
         )
-        
-        chain = prompt | llm | parser
-        data = chain.invoke({"tool": tools, "user_prompt": user_prompt, "CONVERSATION_FUNCTION": CONVERSATION_FUNCTION})
+        response = response.choices[0].message.content
+        print(response)
+        valid_data = CallingFormat.model_validate_json(response)
+        if valid_data:
+            return response
+        else:
+            return "Please reply in valid JSON format."
+    
 
-        return data
+

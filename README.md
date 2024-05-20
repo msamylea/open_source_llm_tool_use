@@ -1,5 +1,5 @@
 # Example use
-'''
+```python
 import open_source_tool_calling
 
 generate_response = ostc.CallingFormat.generate_response
@@ -86,4 +86,4 @@ def invoke_and_run(model, invoke_arg, tools=tools, functions=functions):
         function(**arguments)
 
 invoke_and_run(model,{"query": "What is the current stock price of Apple (AAPL)?"})
-'''
+```

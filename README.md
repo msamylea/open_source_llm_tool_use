@@ -57,17 +57,12 @@ tools = [
 
 
 
-def invoke_and_run(llm, invoke_arg, tools=tools):
-    result = generate_response(llm, invoke_arg, tools)
+def invoke_and_run(llm, invoke_arg, tools=tools, functions=functions):
+    result = generate_response(llm, invoke_arg, tools, functions)
     result = json.loads(result)
     function_name = result['tool']
-    print(function_name)
-    arguments = result['tool_input']
-    function = functions[function_name]
-    if arguments is None:
-        function()
-    else:
-        function(**arguments)
+    arguments = result.get('tool_input', {})
+    functions[function_name](**arguments)
 
 invoke_and_run(llm,{"query": "What is the current stock price of Apple (AAPL)?"})
 ```

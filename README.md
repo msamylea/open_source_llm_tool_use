@@ -57,8 +57,8 @@ tools = [
 
 
 
-def invoke_and_run(llm, invoke_arg, tools=tools, functions=functions):
-    result = generate_response(llm, invoke_arg, tools, functions)
+def invoke_and_run(llm, invoke_arg, tools=tools):
+    result = generate_response(llm, invoke_arg, tools)
     result = json.loads(result)
     function_name = result['tool']
     arguments = result.get('tool_input', {})

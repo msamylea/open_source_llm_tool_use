@@ -57,33 +57,17 @@ tools = [
 
 
 
-def invoke_and_run(model, invoke_arg, tools=tools, functions=functions):
-    result = generate_response(model, invoke_arg, tools, functions)
-    
+def invoke_and_run(llm, invoke_arg, tools=tools, functions=functions):
+    result = generate_response(llm, invoke_arg, tools, functions)
+    result = json.loads(result)
     function_name = result['tool']
     print(function_name)
     arguments = result['tool_input']
     function = functions[function_name]
-    if function_name == 'get_stock_price':
-        runnable = RunnableLambda(function)
-        stock_ticker = arguments['stock_ticker']
-        if isinstance(stock_ticker, str):
-            runnable.invoke(stock_ticker)
-        else:
-            runnable.map().invoke(stock_ticker)
+    if arguments is None:
+        function()
     else:
-        if 'time' in arguments:
-            if isinstance(arguments['time'], dict):
-                try:
-                    if isinstance(arguments['time'], dict) and '$date' in arguments['time']:
-                        arguments['time'] = arguments['time']['$date']
-                    else:
-                        arguments['time'] = arguments['time']['time']
-                except KeyError:
-                    raise ValueError("The 'time' dictionary does not have a key named 'time' or '$date'")
-            elif not isinstance(arguments['time'], str):
-                raise ValueError("The 'time' value must be a string")
         function(**arguments)
 
-invoke_and_run(model,{"query": "What is the current stock price of Apple (AAPL)?"})
+invoke_and_run(llm,{"query": "What is the current stock price of Apple (AAPL)?"})
 ```

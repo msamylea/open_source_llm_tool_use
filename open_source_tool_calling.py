@@ -32,7 +32,7 @@ class CallingFormat(BaseModel):
 
 
     @staticmethod
-    def generate_response(llm, user_prompt: str, tools, functions):
+    def generate_response(llm, user_prompt: str, tools:
     
         response = llm.chat.completions.create(
            model="meta-llama/Meta-Llama-3-70B-Instruct",

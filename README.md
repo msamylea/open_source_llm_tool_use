@@ -1,68 +1,9 @@
 # Example use
-```python
-import open_source_tool_calling
 
-generate_response = ostc.CallingFormat.generate_response
+See app.py for example use.
 
-def get_stock_price(stock_ticker: str) -> float:
-    current_price = stock_info.get_live_price(stock_ticker)
-    print("The current price is ", "$", round(current_price, 2))
+Set api_type as "ollama", "anthropic", "llama-cpp", "watsonx", "lm-studio" to use the langchain prompt/invocation associated with that provider.  
 
-def create_meeting(attendee, time):
-    try:
-        time = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S")
-    except ValueError:
-        time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
-    print(f"Scheduled a meeting with {attendee} on {time}")
+Default api_type is openai and doesn't need to be set.
 
-
-
-tools = [
-        { 
-            "name": "get_stock_price",
-            "description": "Get the current price of the given stock",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "stock_ticker": {
-                        "type": "string",
-                        "description": "The stock ticker to pass into the function"
-                    }
-                },
-                "required": ["stock_ticker"]
-            }
-        },
-        {
-            "name": "create_meeting",
-            "description": "Schedule a meeting for the user with the specified details",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "attendee": {
-                        "type": "string",
-                        "description": "The person to schedule the meeting with"
-                    },
-                    "time": {
-                        "type": "datetime",
-                        "description": "The date and time of the meeting"
-                    }
-                },
-                "required": [
-                    "attendee",
-                    "time"
-                ]
-            },
-        },
-    ],
-
-
-
-def invoke_and_run(llm, invoke_arg, tools=tools):
-    result = generate_response(llm, invoke_arg, tools)
-    result = json.loads(result)
-    function_name = result['tool']
-    arguments = result.get('tool_input', {})
-    functions[function_name](**arguments)
-
-invoke_and_run(llm,{"query": "What is the current stock price of Apple (AAPL)?"})
-```
+**Have not tested anthropic, llama-cpp, watsonx, or lm-studio.  Ollama and OpenAI working on 5/28/2024.
